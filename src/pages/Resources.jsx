@@ -1,44 +1,60 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { resources, categories } from '../data/mockData';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { categories } from '../data/mockData';
 import SearchBar from '../components/SearchBar';
 import FilterButtons from '../components/FilterButtons';
 import ResourceCard from '../components/ResourceCard';
 import { ResourceCardSkeleton } from '../components/Skeleton';
+import { getResources } from '../services/api';
 import gsap from 'gsap';
 
 const Resources = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
-  const [filteredResources, setFilteredResources] = useState(resources);
+  const [filteredResources, setFilteredResources] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const containerRef = useRef(null);
+  const debounceRef = useRef(null);
+  const totalResourcesCount = useRef(0);
 
-  // Simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  // Fetch resources from API with debounce
+  const fetchResources = useCallback(async (search, category) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const data = await getResources(search, category);
+      setFilteredResources(data.resources);
+      totalResourcesCount.current = data.length;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch resources');
+      setFilteredResources([]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    }
   }, []);
 
-  // Filter resources
+  // Initial fetch on mount
   useEffect(() => {
-    let filtered = resources;
+    fetchResources('', 'All');
+  }, [fetchResources]);
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(resource =>
-        resource.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  // Handle search and category changes with debounce
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
 
-    // Category filter
-    if (activeCategory !== 'All') {
-      filtered = filtered.filter(resource => resource.category === activeCategory);
-    }
+    debounceRef.current = setTimeout(() => {
+      fetchResources(searchQuery, activeCategory);
+    }, 300);
 
-setFilteredResources(filtered);
-  }, [searchQuery, activeCategory, isLoading]);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchQuery, activeCategory, fetchResources]);
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8" style={{ background: 'transparent' }}>
@@ -67,10 +83,24 @@ setFilteredResources(filtered);
           />
         </div>
 
+        {/* Error State */}
+        {error && (
+          <div className="col-span-full text-center py-12 mb-6">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-white mb-2">Error loading resources</h3>
+            <p className="text-slate-400">{error}</p>
+          </div>
+        )}
+
         {/* Results Count */}
-        <p className="text-slate-400 mb-6">
-          Showing {filteredResources.length} of {resources.length} resources
-        </p>
+        {!error && (
+          <p className="text-slate-400 mb-6">
+            {isLoading 
+              ? 'Loading resources...' 
+              : `Showing ${filteredResources.length} resources`
+            }
+          </p>
+        )}
 
         {/* Resource Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -102,4 +132,3 @@ setFilteredResources(filtered);
 };
 
 export default Resources;
-

@@ -13,7 +13,7 @@ const RegisterPage = () => {
   const formRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { register } = useAuth();
 
   useEffect(() => {
     gsap.fromTo(formRef.current,
@@ -26,15 +26,33 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.password || !form.confirm) { setError('Please fill in all fields.'); return; }
-    if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
+    if (!form.name || !form.email || !form.password || !form.confirm) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match.');
+      return;
+    }
     setError('');
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    login({ email: form.email, name: form.name });
-    setIsLoading(false);
-    const nextPath = location.state?.from?.pathname || '/';
-    navigate(nextPath, { replace: true });
+
+    try {
+      const result = await register(form.name, form.email, form.password);
+      
+      if (!result.success) {
+        setError(result.error || 'Registration failed');
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(false);
+      const nextPath = location.state?.from?.pathname || '/';
+      navigate(nextPath, { replace: true });
+    } catch (err) {
+      setError('Server error. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (

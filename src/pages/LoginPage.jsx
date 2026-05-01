@@ -25,14 +25,29 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) { setError('Please fill in all fields.'); return; }
+    if (!email || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
     setError('');
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    login({ email });
-    setIsLoading(false);
-    const nextPath = location.state?.from?.pathname || '/';
-    navigate(nextPath, { replace: true });
+
+    try {
+      const result = await login(email, password);
+      
+      if (!result.success) {
+        setError(result.error || 'Login failed');
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(false);
+      const nextPath = location.state?.from?.pathname || '/';
+      navigate(nextPath, { replace: true });
+    } catch (err) {
+      setError('Server error. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -1,17 +1,41 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Button from './Button';
 import StatCard from './StatCard';
 import { Calendar, CheckCircle, Zap } from 'lucide-react';
-import { statistics } from '../data/mockData';
+import { getDashboardStats } from '../services/api';
 import gsap from 'gsap';
 
 const Hero = () => {
   const heroRef = useRef(null);
   const navigate = useNavigate();
+  const [statsData, setStatsData] = useState({
+    totalResources: 0,
+    totalBookings: 0,
+    availableResources: 0
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch dashboard stats on mount
+    const fetchStats = async () => {
+      try {
+        const data = await getDashboardStats();
+        setStatsData({
+          totalResources: data.stats.totalResources,
+          totalBookings: data.stats.totalBookings,
+          availableResources: data.stats.availableResources
+        });
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+
     const ctx = gsap.context(() => {
       // Title animation
       gsap.fromTo('.hero-title',
@@ -46,9 +70,9 @@ const Hero = () => {
   }, []);
 
   const stats = [
-    { icon: Calendar, label: 'Total Resources', value: statistics.totalResources },
-    { icon: CheckCircle, label: 'Total Bookings', value: statistics.totalBookings },
-    { icon: Zap, label: 'Available Now', value: statistics.availableNow },
+    { icon: Calendar, label: 'Total Resources', value: statsData.totalResources },
+    { icon: CheckCircle, label: 'Total Bookings', value: statsData.totalBookings },
+    { icon: Zap, label: 'Available Now', value: statsData.availableResources },
   ];
 
   return (
@@ -122,4 +146,3 @@ const Hero = () => {
 };
 
 export default Hero;
-
