@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useBookings } from '../context/BookingContext';
+import { useAuth } from '../context/AuthContext';
+import { createBooking } from '../services/api';
 import Input from './Input';
 import Button from './Button';
 import gsap from 'gsap';
@@ -15,9 +16,10 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const formRef = useRef(null);
   const navigate = useNavigate();
-  const { addBooking } = useBookings();
+  const { token } = useAuth();
 
   useEffect(() => {
     gsap.fromTo(formRef.current,
@@ -33,29 +35,31 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
     });
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     
-// Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsLoading(false);
-    addBooking({
-      id: Date.now(),
-      resourceName: formData.resourceName,
-      date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      status: 'Pending'
-    });
-    setIsSubmitted(true);
-    
-    // Animate success message
-    gsap.fromTo('.success-message',
-      { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }
-    );
+    try {
+      await createBooking(
+        resource.id,
+        resource.name,
+        formData.date,
+        formData.startTime,
+        formData.endTime,
+        token
+      );
+      setIsSubmitted(true);
+      
+      gsap.fromTo('.success-message',
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }
+      );
+    } catch (err) {
+      setError(err.message || 'Failed to create booking');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -72,7 +76,7 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
           <p className="text-slate-300"><span className="text-slate-500">Date:</span> {formData.date}</p>
           <p className="text-slate-300"><span className="text-slate-500">Time:</span> {formData.startTime} - {formData.endTime}</p>
         </div>
-<Button onClick={() => navigate('/resources')} variant="primary">
+        <Button onClick={() => navigate('/resources')} variant="primary">
           Browse More Resources
         </Button>
       </div>
@@ -85,6 +89,12 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
         <h3 className="text-2xl font-bold text-white">Book Resource</h3>
         <p className="text-slate-400 mt-1">Fill in the details to make a reservation</p>
       </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
 
       <Input
         label="Resource Name"
@@ -150,4 +160,3 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
 };
 
 export default BookingForm;
-

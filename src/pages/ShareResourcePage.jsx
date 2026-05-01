@@ -2,14 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import { CheckCircle, Upload, FileText } from 'lucide-react';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import { useAuth } from '../context/AuthContext';
+import { uploadFile } from '../services/api';
 import gsap from 'gsap';
 
 const ShareResourcePage = () => {
   const [form, setForm] = useState({ title: '', description: '', category: 'Notes' });
   const [fileName, setFileName] = useState('');
+  const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
   const containerRef = useRef(null);
+  const { token } = useAuth();
 
   useEffect(() => {
     gsap.fromTo(containerRef.current,
@@ -21,24 +26,50 @@ const ShareResourcePage = () => {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleFile = (e) => {
-    if (e.target.files[0]) setFileName(e.target.files[0].name);
+    if (e.target.files[0]) {
+      setFileName(e.target.files[0].name);
+      setFile(e.target.files[0]);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      setError('Please log in to upload a resource');
+      return;
+    }
+    if (!file) {
+      setError('Please select a file');
+      return;
+    }
+
+    setError('');
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setIsLoading(false);
-    setIsSubmitted(true);
-    gsap.fromTo('.success-message',
-      { opacity: 0, scale: 0.8 },
-      { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }
-    );
+
+    const formData = new FormData();
+    formData.append('title', form.title);
+    formData.append('description', form.description);
+    formData.append('file', file);
+
+    try {
+      await uploadFile(formData, token);
+      setIsLoading(false);
+      setIsSubmitted(true);
+      gsap.fromTo('.success-message',
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }
+      );
+    } catch (err) {
+      setIsLoading(false);
+      setError(err.message || 'Failed to upload. Please try again.');
+    }
   };
 
-  const handleReset = () => {
+const handleReset = () => {
     setForm({ title: '', description: '', category: 'Notes' });
     setFileName('');
+    setFile(null);
+    setError('');
     setIsSubmitted(false);
   };
 
@@ -66,7 +97,8 @@ const ShareResourcePage = () => {
           </h1>
           <p className="text-slate-400 text-lg">Upload notes, books, or question papers for others</p>
         </div>
-        <form onSubmit={handleSubmit} className="bg-background-secondary rounded-2xl p-8 space-y-6">
+<form onSubmit={handleSubmit} className="bg-background-secondary rounded-2xl p-8 space-y-6">
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
           <Input label="Title" name="title" placeholder="e.g. Data Structures Notes" value={form.title} onChange={handleChange} icon={FileText} required />
 
           <div className="space-y-2">

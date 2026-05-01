@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Users, Calendar, Check } from 'lucide-react';
-import { resources } from '../data/mockData';
+import { getResourceById } from '../services/api';
 import Button from '../components/Button';
 import StatusBadge from '../components/StatusBadge';
 import BookingForm from '../components/BookingForm';
@@ -11,12 +11,25 @@ const ResourceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [resource, setResource] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const foundResource = resources.find(r => r.id === parseInt(id));
-    setResource(foundResource);
+    const fetchResource = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getResourceById(id);
+        setResource(data.resource);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResource();
   }, [id]);
 
   useEffect(() => {
@@ -45,12 +58,24 @@ const ResourceDetails = () => {
     }
   }, [resource, showBookingForm]);
 
-  if (!resource) {
+if (loading) {
+    return (
+      <div className="min-h-screen pt-24 flex items-center justify-center" style={{ background: 'transparent' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-accent-purple mb-4"></div>
+          <h2 className="text-xl font-semibold text-white">Loading resource...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !resource) {
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center" style={{ background: 'transparent' }}>
         <div className="text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-2xl font-bold text-white">Resource not found</h2>
+          <p className="text-slate-400 mt-2">{error || 'The resource you are looking for does not exist.'}</p>
         </div>
       </div>
     );

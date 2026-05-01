@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Hero from '../components/Hero';
 import ResourceCard from '../components/ResourceCard';
-import { resources } from '../data/mockData';
+import { getResources } from '../services/api';
 
 const Home = () => {
-  const featuredResources = resources.slice(0, 4);
+  const [featuredResources, setFeaturedResources] = useState([]);
+
+  useEffect(() => {
+    getResources().then(data => {
+      setFeaturedResources(data.resources.slice(0, 4));
+    }).catch(console.error);
+  }, []);
 
   return (
     <div style={{ background: 'transparent' }}>
@@ -30,4 +36,3 @@ const Home = () => {
 };
 
 export default Home;
-
