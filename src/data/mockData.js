@@ -132,6 +132,50 @@ export const resources = [
     capacity: 8,
     location: 'Floor 2, Media Room',
     amenities: ['Noise-Canceling Headphones', 'Comfortable Seating', 'Charging Stations', 'Relaxing Environment']
+  },
+  {
+    id: 13,
+    name: '3D Printer Pro',
+    category: 'Equipment',
+    status: 'Available',
+    image: '🖨️',
+    description: 'High precision 3D printer with dual extruders for prototyping design models and parts.',
+    capacity: 1,
+    location: 'Maker Lab',
+    amenities: ['PLA/ABS Support', 'Dual Extruder', 'High Precision', 'WiFi']
+  },
+  {
+    id: 14,
+    name: 'Quiet Focus Pod',
+    category: 'Rooms',
+    status: 'Available',
+    image: '🛋️',
+    description: 'Private mini office pod designed for deep focus, interviews, and one-on-one calls.',
+    capacity: 1,
+    location: 'Floor 1, Pods',
+    amenities: ['Noise Isolation', 'Tablet Controls', 'LED Lighting', 'USB Charging']
+  },
+  {
+    id: 15,
+    name: 'Collaboration Table',
+    category: 'Rooms',
+    status: 'Booked',
+    image: '🪑',
+    description: 'Spacious meeting table with power ports and video conferencing stand. Ideal for planning sessions.',
+    capacity: 8,
+    location: 'Floor 2, Room 210',
+    amenities: ['Power Ports', 'Conference Stand', 'Whiteboard', 'Fast Wi-Fi']
+  },
+  {
+    id: 16,
+    name: 'Wellness Kit',
+    category: 'Equipment',
+    status: 'Available',
+    image: '🧘',
+    description: 'Portable relaxation kit with yoga mat, noise-cancelling headphones, and mindfulness guides.',
+    capacity: 1,
+    location: 'Wellness Center',
+    amenities: ['Yoga Mat', 'Headphones', 'Guided Sessions', 'Portable Bag']
   }
 ];
 
@@ -205,9 +249,9 @@ export const bookings = [
 export const categories = ['All', 'Rooms', 'Equipment', 'Vehicles', 'Books'];
 
 export const statistics = {
-  totalResources: 12,
+  totalResources: 16,
   totalBookings: 156,
-  availableNow: 8,
+  availableNow: 10,
   pendingBookings: 3
 };
 

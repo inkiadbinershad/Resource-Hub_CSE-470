@@ -12,14 +12,19 @@
 
 html {
   scroll-behavior: smooth;
+  min-height: 100%;
 }
 
 body {
   font-family: "Inter", sans-serif;
   background-color: transparent;
   color: #f8fafc;
-  min-height: 100vh;
+  min-height: 100%;
   overflow-x: hidden;
+}
+
+#root {
+  min-height: 100%;
 }
 
 /* Custom scrollbar */

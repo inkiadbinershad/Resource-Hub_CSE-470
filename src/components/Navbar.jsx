@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Calendar, Home, BookOpen, History } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, Calendar, Home, BookOpen, History, LogIn, LogOut, Upload } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import gsap from 'gsap';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,10 +26,20 @@ const Navbar = () => {
     );
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setIsOpen(false);
+  };
+
   const navLinks = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Resources', path: '/resources', icon: Calendar },
     { name: 'History', path: '/history', icon: History },
+    { name: 'Share', path: '/share', icon: Upload },
+    isAuthenticated
+      ? { name: 'Logout', action: handleLogout, icon: LogOut }
+      : { name: 'Login', path: '/login', icon: LogIn },
   ];
 
   return (
@@ -46,18 +59,29 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className={`nav-item px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
-                  location.pathname === link.path
-                    ? 'bg-accent-purple/20 text-accent-purple'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                }`}
-              >
-                <link.icon size={18} />
-                {link.name}
-              </Link>
+              link.action ? (
+                <button
+                  key={link.name}
+                  onClick={link.action}
+                  className="nav-item px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800"
+                >
+                  <link.icon size={18} />
+                  {link.name}
+                </button>
+              ) : (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  className={`nav-item px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 ${
+                    location.pathname === link.path
+                      ? 'bg-accent-purple/20 text-accent-purple'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <link.icon size={18} />
+                  {link.name}
+                </Link>
+              )
             ))}
           </div>
 
@@ -75,19 +99,32 @@ const Navbar = () => {
           <div className="md:hidden mt-4 pb-4">
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-3 ${
-                    location.pathname === link.path
-                      ? 'bg-accent-purple/20 text-accent-purple'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  <link.icon size={20} />
-                  {link.name}
-                </Link>
+                link.action ? (
+                  <button
+                    key={link.name}
+                    onClick={() => {
+                      link.action();
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-3 text-slate-300 hover:text-white hover:bg-slate-800"
+                  >
+                    <link.icon size={20} />
+                    {link.name}
+                  </button>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-3 ${
+                      location.pathname === link.path
+                        ? 'bg-accent-purple/20 text-accent-purple'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <link.icon size={20} />
+                    {link.name}
+                  </Link>
+                )
               ))}
             </div>
           </div>

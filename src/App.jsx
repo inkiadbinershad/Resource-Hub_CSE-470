@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Resources from './pages/Resources';
 import ResourceDetails from './pages/ResourceDetails';
 import BookingHistoryPage from './pages/BookingHistoryPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ShareResourcePage from './pages/ShareResourcePage';
 import VisualEffects from './components/VisualEffects';
+import { useAuth } from './context/AuthContext';
 import gsap from 'gsap';
 
 const AnimatedRoute = ({ children }) => {
@@ -28,9 +31,20 @@ const AnimatedRoute = ({ children }) => {
   );
 };
 
+const RequireAuth = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  return children;
+};
+
 function App() {
   return (
-    <VisualEffects
+<VisualEffects
       // Aurora Background Configuration
       enableAurora={true}
       auroraColorStops={["#8c7ff0", "#B19EEF", "#5227FF"]}
@@ -47,9 +61,9 @@ function App() {
       enableClickSpark={true}
       enableAutoWrap={true}
     >
-      <div className="min-h-screen" style={{ position: 'relative', zIndex: 1, background: 'transparent' }}>
+      <div className="flex min-h-screen flex-col" style={{ position: 'relative', zIndex: 1, background: 'transparent' }}>
         <Navbar />
-        <AnimatePresence mode="wait">
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={
               <AnimatedRoute>
@@ -71,8 +85,25 @@ function App() {
                 <BookingHistoryPage />
               </AnimatedRoute>
             } />
+            <Route path="/share" element={
+              <AnimatedRoute>
+                <RequireAuth>
+                  <ShareResourcePage />
+                </RequireAuth>
+              </AnimatedRoute>
+            } />
+            <Route path="/login" element={
+              <AnimatedRoute>
+                <LoginPage />
+              </AnimatedRoute>
+            } />
+            <Route path="/register" element={
+              <AnimatedRoute>
+                <RegisterPage />
+              </AnimatedRoute>
+            } />
           </Routes>
-        </AnimatePresence>
+        </main>
         
         {/* Footer */}
         <footer className="bg-background-secondary/30 border-t border-slate-800 py-8 mt-auto">

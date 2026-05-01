@@ -3,7 +3,7 @@ import StatusBadge from './StatusBadge';
 import { Clock } from 'lucide-react';
 import gsap from 'gsap';
 
-const BookingHistory = ({ bookings }) => {
+const BookingHistory = ({ bookings, onCancel }) => {
   const tableRef = useRef(null);
 
   useEffect(() => {
@@ -35,8 +35,11 @@ const BookingHistory = ({ bookings }) => {
               <th className="text-left py-4 px-6 text-slate-400 font-semibold text-sm uppercase tracking-wider">
                 Time Slot
               </th>
-              <th className="text-left py-4 px-6 text-slate-400 font-semibold text-sm uppercase tracking-wider">
+<th className="text-left py-4 px-6 text-slate-400 font-semibold text-sm uppercase tracking-wider">
                 Status
+              </th>
+              <th className="text-left py-4 px-6 text-slate-400 font-semibold text-sm uppercase tracking-wider">
+                Action
               </th>
             </tr>
           </thead>
@@ -65,8 +68,22 @@ const BookingHistory = ({ bookings }) => {
                     <span>{booking.startTime} - {booking.endTime}</span>
                   </div>
                 </td>
-                <td className="py-4 px-6">
+<td className="py-4 px-6">
                   <StatusBadge status={booking.status} />
+                </td>
+                <td className="py-4 px-6">
+                  {booking.status !== 'Cancelled' && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Cancel this booking?')) {
+                          onCancel(booking.id);
+                        }
+                      }}
+                      className="px-3 py-1 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

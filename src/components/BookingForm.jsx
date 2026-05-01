@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useBookings } from '../context/BookingContext';
 import Input from './Input';
 import Button from './Button';
 import gsap from 'gsap';
@@ -14,6 +16,8 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef(null);
+  const navigate = useNavigate();
+  const { addBooking } = useBookings();
 
   useEffect(() => {
     gsap.fromTo(formRef.current,
@@ -33,10 +37,18 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
+// Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     setIsLoading(false);
+    addBooking({
+      id: Date.now(),
+      resourceName: formData.resourceName,
+      date: formData.date,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      status: 'Pending'
+    });
     setIsSubmitted(true);
     
     // Animate success message
@@ -60,8 +72,8 @@ const BookingForm = ({ resource, onSubmit, onCancel }) => {
           <p className="text-slate-300"><span className="text-slate-500">Date:</span> {formData.date}</p>
           <p className="text-slate-300"><span className="text-slate-500">Time:</span> {formData.startTime} - {formData.endTime}</p>
         </div>
-        <Button onClick={onCancel} variant="primary">
-          Book Another Resource
+<Button onClick={() => navigate('/resources')} variant="primary">
+          Browse More Resources
         </Button>
       </div>
     );

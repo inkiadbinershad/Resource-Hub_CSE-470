@@ -1,21 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { bookings as initialBookings } from '../data/mockData';
+import { useBookings } from '../context/BookingContext';
 import BookingHistory from '../components/BookingHistory';
 import { TableRowSkeleton } from '../components/Skeleton';
 import gsap from 'gsap';
 
 const BookingHistoryPage = () => {
-  const [bookings, setBookings] = useState([]);
+  const { bookings, cancelBooking } = useBookings();
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('All');
   const containerRef = useRef(null);
 
   // Simulate loading
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setBookings(initialBookings);
-      setIsLoading(false);
-    }, 1000);
+    const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
@@ -88,7 +85,7 @@ const BookingHistoryPage = () => {
             </table>
           </div>
         ) : filteredBookings.length > 0 ? (
-          <BookingHistory bookings={filteredBookings} />
+<BookingHistory bookings={filteredBookings} onCancel={cancelBooking} />
         ) : (
           <div className="text-center py-12 glass rounded-2xl">
             <div className="text-6xl mb-4">📋</div>

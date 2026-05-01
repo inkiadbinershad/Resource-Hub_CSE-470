@@ -37,15 +37,7 @@ const Resources = () => {
       filtered = filtered.filter(resource => resource.category === activeCategory);
     }
 
-    // Animate filtered results
-    if (!isLoading) {
-      gsap.fromTo('.resource-card',
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power3.out' }
-      );
-    }
-
-    setFilteredResources(filtered);
+setFilteredResources(filtered);
   }, [searchQuery, activeCategory, isLoading]);
 
   return (
